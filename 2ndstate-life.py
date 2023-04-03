@@ -34,7 +34,7 @@ def draw(window, grid):
     for i in range(ROWS):
         for j in range(COLS):
             rect = pygame.Rect(j * CELL_SIZE, i * CELL_SIZE,
-                               CELL_SIZE, CELL_SIZE)
+                               CELL_SIZE*1.5, CELL_SIZE*1.5)
             if grid[i][j] == 1:
                 pygame.draw.rect(window, BLACK, rect)
             if grid[i][j] == 2:
@@ -66,7 +66,7 @@ def main():
     paused = True
 
     while running:
-        clock.tick(10)
+        clock.tick(6000)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -90,6 +90,7 @@ def main():
 
         draw(window, grid)
         pygame.display.flip()
+        print("Iterations Per Second:", clock.get_fps())
 
     pygame.quit()
 
