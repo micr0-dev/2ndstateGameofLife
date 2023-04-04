@@ -161,7 +161,10 @@ def trim_grid(grid):
 
     for y in range(len(new_grid)):
         for x in range(len(new_grid[0])):
-            new_grid[y][x] = grid[y+boxPos.y][x+boxPos.x]
+            try:
+                new_grid[y][x] = grid[y+boxPos.y][x+boxPos.x]
+            except IndexError:
+                pass
     return new_grid
 
 
@@ -170,7 +173,10 @@ def rescale_grid(grid):
 
     for y in range(len(grid)):
         for x in range(len(grid[0])):
-            new_grid[y+boxPos.y][x+boxPos.x] = grid[y][x]
+            try:
+                new_grid[y+boxPos.y][x+boxPos.x] = grid[y][x]
+            except IndexError:
+                pass
 
     return new_grid
 
@@ -221,6 +227,8 @@ def main():
 
     showBoundingBox = False
 
+    runCount = 0
+
     while running:
         clock.tick(6000)
         for event in pygame.event.get():
@@ -261,7 +269,10 @@ def main():
             pygame.draw.rect(window, GREEN, rect, 1)
 
         pygame.display.flip()
-        # print("Iterations Per Second:", clock.get_fps())
+
+        if runCount % 20 == 0:
+            print("Iterations Per Second:", clock.get_fps())
+        runCount += 1
 
     pygame.quit()
 
