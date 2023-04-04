@@ -2,10 +2,10 @@ import pygame
 import numpy as np
 import random
 import math
-from multiprocessing import Process, Queue
-
 
 # Reused code from From MiraslauKavaliou/SimuPy/physics.py
+
+
 class Vector2:
     def __init__(self, x=0, y=0):
         self.x = x
@@ -138,43 +138,21 @@ def draw(window, grid):
             # pygame.draw.rect(window, WHITE, rect, 1)
 
 
-def rules(new_grid, grid, i, j):
-    # total = np.sum(
-    #     grid[(i - 1): (i + 2), (j - 1): (j + 2)]) - grid[i, j]
-    total = 0
-    for r in range(-1, 2):
-        for c in range(-1, 2):
-            b = i+r
-            v = j+c
-            if b < 0 or v < 0 or b > len(grid)-1 or v > len(grid[0])-1:
-                continue
-            # elif grid[b][v] != 0:
-            #     total += 1
-            else:
-                total += grid[b][v]
-    total -= grid[i, j]
-    if grid[i, j] == 1 and (total < 2 or total > 3):
-        new_grid[i, j] = 0
-    elif grid[i, j] == 1 and total == 2:
-        new_grid[i, j] = 2
-    elif grid[i, j] == 0 and total == 3:
-        new_grid[i, j] = 1
-
-
 def update_grid(grid):
     new_grid = grid.copy()
+    rows, cols = grid.shape
 
-    threads = []
+    for i in range(rows):
+        for j in range(cols):
+            total = np.sum(grid[max(0, i - 1):min(rows, i + 2),
+                                max(0, j - 1):min(cols, j + 2)]) - grid[i, j]
 
-    for i in range(len(grid)):
-        for j in range(len(grid[0])):
-            rules(new_grid, grid, i, j)
-            # p.start()
-            # threads.append(p)
-
-    # print(len(threads))
-    # for t in threads:
-    #     t.join()
+            if grid[i, j] == 1 and (total < 2 or total > 3):
+                new_grid[i, j] = 0
+            elif grid[i, j] == 1 and total == 2:
+                new_grid[i, j] = 2
+            elif grid[i, j] == 0 and total == 3:
+                new_grid[i, j] = 1
     return new_grid
 
 
@@ -183,10 +161,7 @@ def trim_grid(grid):
 
     for y in range(len(new_grid)):
         for x in range(len(new_grid[0])):
-            try:
-                new_grid[y][x] = grid[y+boxPos.y][x+boxPos.x]
-            except IndexError:
-                pass
+            new_grid[y][x] = grid[y+boxPos.y][x+boxPos.x]
     return new_grid
 
 
@@ -195,11 +170,7 @@ def rescale_grid(grid):
 
     for y in range(len(grid)):
         for x in range(len(grid[0])):
-
-            try:
-                new_grid[y+boxPos.y][x+boxPos.x] = grid[y][x]
-            except IndexError:
-                pass
+            new_grid[y+boxPos.y][x+boxPos.x] = grid[y][x]
 
     return new_grid
 
@@ -218,6 +189,7 @@ def flip(grid, x, y):
 def compute_box_size(grid):
     global boxPos, boxSize
     min_x, min_y, max_x, max_y = ROWS, COLS, 0, 0
+    margin = 2
 
     for y in range(ROWS):
         for x in range(COLS):
@@ -227,26 +199,15 @@ def compute_box_size(grid):
                 max_x = max(max_x, x)
                 max_y = max(max_y, y)
 
-    boxPos = Vector2(min_x - 1, min_y - 1)
-    boxSize = Vector2(max_x - min_x + 3, max_y - min_y + 3)
+    boxPos = Vector2(min_x - margin, min_y - margin)
+    boxSize = Vector2(max_x - min_x + 1 + 2 * margin,
+                      max_y - min_y + 1 + 2 * margin)
 
-    if boxPos.x > COLS:
-        boxPos.x = COLS
-    if boxPos.y > ROWS:
-        boxPos.y = ROWS
-    if boxPos.x < 0:
-        boxPos.x = 0
-    if boxPos.y < 0:
-        boxPos.y = 0
+    boxPos.x = max(0, min(boxPos.x, COLS))
+    boxPos.y = max(0, min(boxPos.y, ROWS))
 
-    if boxSize.x+boxPos.x > COLS:
-        boxSize.x = COLS-boxPos.x
-    if boxSize.y+boxPos.y > ROWS:
-        boxSize.y = ROWS-boxPos.y
-    if boxSize.x < 0:
-        boxSize.x = 0
-    if boxSize.y < 0:
-        boxSize.y = 0
+    boxSize.x = max(0, min(boxSize.x, COLS - boxPos.x))
+    boxSize.y = max(0, min(boxSize.y, ROWS - boxPos.y))
 
 
 def main():
@@ -300,7 +261,7 @@ def main():
             pygame.draw.rect(window, GREEN, rect, 1)
 
         pygame.display.flip()
-        print("Iterations Per Second:", clock.get_fps())
+        # print("Iterations Per Second:", clock.get_fps())
 
     pygame.quit()
 
