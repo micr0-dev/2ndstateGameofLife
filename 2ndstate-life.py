@@ -2,6 +2,8 @@ import pygame
 import numpy as np
 import random
 import math
+import imageio
+import os
 
 # Reused code from From MiraslauKavaliou/SimuPy/physics.py
 
