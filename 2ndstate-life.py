@@ -106,6 +106,7 @@ CELL_SIZE = WIDTH // COLS
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 
 # Create the grid
@@ -131,10 +132,9 @@ def draw(window, grid):
         for j in range(COLS):
             rect = pygame.Rect(j * CELL_SIZE, i * CELL_SIZE,
                                CELL_SIZE, CELL_SIZE)
-            if grid[i][j] == 1:
-                pygame.draw.rect(window, BLACK, rect)
-            if grid[i][j] == 2:
-                pygame.draw.rect(window, RED, rect)
+            value = (255 * (grid[i, j]))
+            pygame.draw.rect(window, (value, value, value), rect)
+
             # pygame.draw.rect(window, WHITE, rect, 1)
 
 
@@ -144,15 +144,21 @@ def update_grid(grid):
 
     for i in range(rows):
         for j in range(cols):
-            total = np.sum(grid[max(0, i - 1):min(rows, i + 2),
-                                max(0, j - 1):min(cols, j + 2)]) - grid[i, j]
-
-            if grid[i, j] == 1 and (total < 2 or total > 3):
-                new_grid[i, j] = 0
-            elif grid[i, j] == 1 and total == 2:
-                new_grid[i, j] = 2
-            elif grid[i, j] == 0 and total == 3:
-                new_grid[i, j] = 1
+            total = 0
+            for r in range(-1, 2):
+                for c in range(-1, 2):
+                    b = i+r
+                    v = j+c
+                    if b < 0 or v < 0 or b > len(grid)-1 or v > len(grid[0])-1:
+                        continue
+                    elif grid[b][v] == 1:
+                        total += 1
+            if grid[i, j] == 1:
+                if total < 1 or total > 5:
+                    new_grid[i, j] = 0
+            else:
+                if total == 3 or total == 5 or total == 7:
+                    new_grid[i, j] = 1
     return new_grid
 
 
