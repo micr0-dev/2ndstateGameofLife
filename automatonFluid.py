@@ -2,6 +2,9 @@ import pygame
 import numpy as np
 import random
 import math
+import imageio
+import os
+
 
 # Reused code from From MiraslauKavaliou/SimuPy/physics.py
 
@@ -99,7 +102,7 @@ pygame.init()
 
 # Define constants
 WIDTH, HEIGHT = 800, 800
-ROWS, COLS = 100, 100
+ROWS, COLS = 80, 80
 CELL_SIZE = WIDTH // COLS
 
 # Colors
@@ -140,7 +143,11 @@ def draw(window, grid):
                 window, (color_value, color_value, color_value), rect)
 
 
-def update_grid(grid, prev_grid, dt=0.1, speed=2):
+def save_frame(window, frame_number):
+    pygame.image.save(window, f"frame_{frame_number:04d}.png")
+
+
+def update_grid(grid, prev_grid, dt=0.1, speed=1):
     new_grid = np.zeros_like(grid)
     rows, cols = grid.shape
 
@@ -223,7 +230,7 @@ def main():
     prev_grid = np.zeros_like(grid)
 
     window = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("2nd State Game of Life")
+    pygame.display.set_caption("Fluid Automaton")
     clock = pygame.time.Clock()
 
     running = True
@@ -232,6 +239,9 @@ def main():
     showBoundingBox = False
 
     runCount = 0
+
+    frame_number = 0
+    gif_mode = False
 
     while running:
         clock.tick(6000)
@@ -242,15 +252,26 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     paused = not paused
+                    if not paused and gif_mode:
+                        print("Recording...")
                 if event.key == pygame.K_r:
                     paused = True
                     grid = np.zeros((ROWS, COLS))
                     prev_grid = np.zeros_like(grid)
+                    for i in range(frame_number):
+                        os.remove(f"frame_{i:04d}.png")
+                    frame_number = 0
                 if event.key == pygame.K_w:
                     whiteNoise(grid, 0.5)
                     compute_box_size(grid)
                 if event.key == pygame.K_b:
                     showBoundingBox = not showBoundingBox
+                if event.key == pygame.K_g:  # Press 'g' to toggle gif_mode
+                    gif_mode = not gif_mode
+                    if gif_mode:
+                        print("GIF mode ENABLED!")
+                    else:
+                        print("GIF mode DISABLED!")
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = pygame.mouse.get_pos()
@@ -261,9 +282,13 @@ def main():
 
         if not paused:
             temp_grid = grid.copy()
-            grid = update_grid(grid, prev_grid)
+            grid = update_grid(grid, prev_grid, speed=3)
             prev_grid = temp_grid
             compute_box_size(grid)
+
+            if gif_mode:
+                save_frame(window, frame_number)
+                frame_number += 1
 
         draw(window, grid)
 
@@ -278,6 +303,24 @@ def main():
         if runCount % 20 == 0:
             print("Iterations Per Second:", clock.get_fps())
         runCount += 1
+
+    # Create the gif
+    if frame_number > 0:
+        images = []
+        print("Saving gif...")
+        for i in range(frame_number):
+            images.append(imageio.imread(f"frame_{i:04d}.png"))
+            print(str(round((i/frame_number)*100, 2))+"%")
+
+        print("Creating GIF...")
+        imageio.mimsave("simulation.gif", images, fps=24)
+        print("GIF created!")
+
+        print("Deleting temp files...")
+        # Remove the individual frames
+        for i in range(frame_number):
+            os.remove(f"frame_{i:04d}.png")
+            print(str(round((i/frame_number)*100, 2))+"%")
 
     pygame.quit()
 
