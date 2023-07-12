@@ -6,7 +6,7 @@ The game is implemented using Pygame and numpy, and utilizes a 2D grid to repres
 
 Additionally, it provides the feature to save simulation frames and create a GIF, providing a dynamic visualization of how the system evolves over time.
 
-<img src="simulationAir.gif" width="425" alt="Fluid Dynamic Simulation of a Bullet flying through Air"/> <img src="triangle.gif" width="425" alt="Cellular Automaton for generating the Sierpinski Triangle"/> 
+<img src="simulationAir.gif" width="40%" alt="Fluid Dynamic Simulation of a Bullet flying through Air"/> <img src="triangle.gif" width="40%" alt="Cellular Automaton for generating the Sierpinski Triangle"/> 
 
 ## Features
 
